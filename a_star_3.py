@@ -14,6 +14,8 @@ class Node():
         self.parent = parent
         self.state = state
         self.remaining_locations = []
+        self.visited_locations = {}
+
         self.path_so_far = []
 
         # potential variables: 
@@ -132,11 +134,10 @@ class AStar:
             current_node = heapq.heappop(open_list)
             
             # Found the goal
-            print("LEN", len(closed_map))
-            print(current_node)
-            print(end_node)
+            #print("LEN", len(closed_map))
+            #print(current_node)
+            #print(end_node)
             # TODO this check is wrong 
-            print(current_node == end_node)
             if current_node == end_node:
                 print("END")
                 path = []
@@ -147,12 +148,17 @@ class AStar:
                 return path[::-1] # Return reversed path
         
             # get children here 
-            children = graph[current_node.state]
-            print("CURRENT", current_node.state)
+            # THIS WORKS!
+            #children = graph[current_node.state]
+            #print("CURRENT", current_node.state)
+
+            # TODO trying to get only relevant children
+            children = self.env.get_next_states(current_node)
             print("children", children)
             for c in children:
-                print(c)
+                print("CHILD: ", c)
                 child = Node(c, current_node)
+                #current_node.visited_locations[c.name] = c
 
                 path = []
                 current = current_node
@@ -162,7 +168,7 @@ class AStar:
                 child.path_so_far =  path[::-1] # Return reversed path
                 
                 #child.g = child.get_cost()
-                print(child.g)
+                #print(child.g)
                 # H is the heuristic — estimated distance from the current node to the end node.
                 child.h = heuristic(child.state, end_node.state)
                 child.f = child.get_cost() + child.h
@@ -176,6 +182,8 @@ class AStar:
                     open_map[child.state] = child.g
                     heapq.heappush(open_list, child)
 
+            #printself.env.remaining_locations)
+            self.env.remaining_locations.pop(current_node.state.name)
             closed_map[current_node.state] = current_node.g
         print(len(closed_map))
 

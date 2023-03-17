@@ -1,11 +1,10 @@
 
 class Environment:
 
-    def __init__(self, start_state, locations, graph):
+    def __init__(self, start_state, locations, remaining_locations, graph):
         self.current_state = start_state
         self.start_state = start_state
-        #self.remaining_locations = remaining_locations
-
+        self.remaining_locations = remaining_locations # actualy states 
         self.locations = locations
 
         self.graph = graph
@@ -14,13 +13,30 @@ class Environment:
     def get_remaining_locations(self):
         return self.remaining_locations
     
-    def get_next_states(self, state):
+    def get_next_states(self, node):
+        state = node.state
         list = []
-
+        #print("GET NEXT STATES")
+        print("REM", self.remaining_locations)
+        print(len(self.remaining_locations))
         # if within the same country, only return those states
-        for l in self.locations: 
-            if state.country
+        for name,s in self.remaining_locations.items(): 
+            #print(s.name not in node.visited_locations)
+            if state.country == s.country :
+                list.append(s)
+        
+        if len(list) == 0 or len(list) == 1:
+            for name, s in self.remaining_locations.items(): 
+                if int(s.hype) >= 7:
+                    list.append(s)
 
+        if len(list) == 0:
+            print("locations:", self.remaining_locations)
+
+            return self.remaining_locations
+        else: 
+            print("locations:", list)
+            return list 
         # otherwise, return all locations with hype over x
 
 

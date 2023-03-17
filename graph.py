@@ -99,14 +99,22 @@ def main():
     states = create_states(coordinates)
     print(states)
     graph = create_test_graph(states)
+
     for g,v in graph.items():
         print(g,"value", v)
+    remaining_locations = {}
+    i = 0
+    for s in states: 
+        #if i == 0:
+        #    pass
+        remaining_locations[s.name] = s
+        i+=1
     
-    env = Environment(states[0], states, graph)
+    env = Environment(states[0], states, remaining_locations, graph)
     search = AStar(env)
 
     print(states[0], states[1])
-    path = search.a_star(graph, states[0], states[8])
+    path = search.a_star(graph, states[0], states[9])
     print("PATH", path)
 
 
