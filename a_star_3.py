@@ -10,11 +10,12 @@ State = collections.namedtuple('State',('location'))
 class Node():
     """A node class for A* Pathfinding"""
 
-    def __init__(self, state: State, parent= None, remaining_locations=[]):
+    def __init__(self, state: State, visited_countries, parent= None):
         self.parent = parent
         self.state = state
         self.remaining_locations = []
         self.visited_locations = {}
+        self.visited_countries = visited_countries
 
         self.path_so_far = []
 
@@ -32,11 +33,41 @@ class Node():
         self.g = 0
         self.h = 0
         self.f = 0
+
+    def get_cost(self, current, child, env): 
+        # TODO calculate haversine from this node to last node in remaining_locations
+        #total = 0   
+        #prev = child.state
+        #for s in self.path_so_far:
+        #    total += haversine(prev, s) 
+        #    prev = s
+        #total = haversine(prev, end_state) 
+        #print("total cost:", total)
+        return haversine(current.state, child.state) 
     
-    def get_cost(self):
-        if len(self.path_so_far) == 0:
-            return 100000000000          
-        return 10 - len(self.path_so_far) * 100000000000 
+    def get_cost_old(self, current, child, env):
+        cost = 0
+        # if two countries are the same, penalize 
+        countries = []
+        #print("Cost path so far", self.path_so_far)
+        for s in self.path_so_far:
+            countries.append(s.country)
+        
+        #if len(countries) > len(set(countries)):
+            #print("THIS IS TRUE")
+            #cost += len(countries) - len(set(countries)) * 100
+        #cost -= len(self.visited_countries) * 100000
+        # if a country on the continent has not been visited yet, penalize
+        '''TODO if countries does not contain all countries from a visited continent, PENALIZE'''
+
+        missing = len(env.missing_country(current))
+        if missing == []:
+            missing = 0
+        cost += missing* 100
+
+        cost += haversine(self.state, child.state)
+        #print("COST", cost)
+        return cost 
     
     def is_goal_state(self):
         return self.path_so_far == 8
@@ -89,9 +120,7 @@ def haversine(coord1, coord2):
 
     return meters
 
-def heuristic(child, end_node): 
-        
-    return haversine(child, end_node) * 10
+
 
 class AStar:
     def __init__(self, env):
@@ -108,13 +137,53 @@ class AStar:
     - When looping, we create nodes based on those remaining states. 
     - Potentially? 
     """
+    def old_heuristic(self, child, end_state): 
+        # TODO calculate haversine from this node to last node in remaining_locations
+        total = 0   
+        prev = child
+        for name, s in self.env.remaining_locations.items():
+            total += haversine(prev, s) 
+            prev = s
+        total = haversine(prev, end_state) 
+       # print("total heur:", total)
+        return total
     
-    def a_star(self, graph, start, end):
+    def heuristic(self,node, env):
+        state = node.state
+        unvisited_states = [s for s in env.remaining_locations.values() if s.country not in node.visited_countries]
+        print("unvisited states", unvisited_states)
+        remaining_continents = set(s.continent for s in unvisited_states)
+        if state.country not in node.visited_countries:
+            remaining_continents.add(state.continent)
+        continent_priority = {}
+        for continent in remaining_continents:
+            count = sum(1 for s in unvisited_states if s.continent == continent)
+            continent_priority[continent] = count
+        if continent_priority:
+
+            max_priority_continent = max(continent_priority, key=continent_priority.get)
+        else: 
+            max_priority_continent = "Europe"
+        print("MAX", max_priority_continent)
+        if state.continent == max_priority_continent:
+            #print("total heur:", 0)
+
+            return 0
+        else:
+            #print("total heur:", 100000000)
+
+            return 100
+
+
+
+
+
+    def a_star(self, start, end):
         # Create start and end node
  
-        start_node = Node(start, None)
+        start_node = Node(start, set(), None)
         start_node.g = start_node.h = start_node.f = 0
-        end_node = Node(end, None)
+        end_node = Node(end, set(), None)
         end_node.g = end_node.h = end_node.f = 0
         # Initialize both open and closed list
         open_list = []
@@ -146,44 +215,63 @@ class AStar:
                     path.append(current.state)
                     current = current.parent
                 return path[::-1] # Return reversed path
-        
-            # get children here 
-            # THIS WORKS!
-            #children = graph[current_node.state]
-            #print("CURRENT", current_node.state)
+
+            print("CURRENT", current_node.state, "\n", "f:", current_node.g, "\n")
+            print("PATH SO FAR", current_node.path_so_far, "\n")
+
+            print("VISITED COUNTRIES", current_node.visited_countries, "\n")
+
+
+            current_node.visited_countries.add(current_node.state.country)
 
             # TODO trying to get only relevant children
-            children = self.env.get_next_states(current_node)
-            print("children", children)
+            #children = self.env.get_next_states(current_node)
+            children = self.env.get_valid_locations(current_node)
+
+            print("valid locations", children, "\n")
             for c in children:
-                print("CHILD: ", c)
-                child = Node(c, current_node)
-                #current_node.visited_locations[c.name] = c
+                #print("CHILD: ", c)
+
+                
+                child = Node(c, current_node.visited_countries, current_node)
+                #child.visited_countries.add(c.country)
 
                 path = []
-                current = current_node
+                current = child
+                visited_countries = set()
                 while current is not None:
                     path.append(current.state)
+                    visited_countries.add(current.state.country)
                     current = current.parent
                 child.path_so_far =  path[::-1] # Return reversed path
+                child.visited_countries = visited_countries
                 
                 #child.g = child.get_cost()
                 #print(child.g)
                 # H is the heuristic — estimated distance from the current node to the end node.
-                child.h = heuristic(child.state, end_node.state)
-                child.f = child.get_cost() + child.h
+
+                #child.h = self.heuristic(child.state, end_node.state)
+                child.h = self.heuristic(child, self.env)
+                child.g = current_node.g + current_node.get_cost(current_node, child, self.env)
+                print("child.g")
+                print(child.g)
+                child.f = child.g + child.h
 
                 if child.state in closed_map:
-                     continue
-                elif child.state in open_map and child.g >= open_map[child.state]:
                     continue
+                #elif child.state in open_map and child.g >= open_map[child.state]:
+                #    continue
                 else: 
-                    print("we here")
                     open_map[child.state] = child.g
                     heapq.heappush(open_list, child)
 
             #printself.env.remaining_locations)
-            self.env.remaining_locations.pop(current_node.state.name)
+            #child.visited_countries.add(c.country)
+
+            #self.env.remaining_locations.pop(current_node.state.name)
+            self.env.visited_countries.add(current_node.state.country)
+            #print(self.env.remaining_countries)
+            #self.env.remaining_countries.remove(current_node.state.country)
             closed_map[current_node.state] = current_node.g
         print(len(closed_map))
 
