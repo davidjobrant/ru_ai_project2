@@ -151,7 +151,7 @@ class AStar:
     def heuristic(self,node, env):
         state = node.state
         unvisited_states = [s for s in env.remaining_locations.values() if s.country not in node.visited_countries]
-        print("unvisited states", unvisited_states)
+        #print("unvisited states", unvisited_states)
         remaining_continents = set(s.continent for s in unvisited_states)
         if state.country not in node.visited_countries:
             remaining_continents.add(state.continent)
@@ -164,7 +164,7 @@ class AStar:
             max_priority_continent = max(continent_priority, key=continent_priority.get)
         else: 
             max_priority_continent = "Europe"
-        print("MAX", max_priority_continent)
+        #print("MAX", max_priority_continent)
         if state.continent == max_priority_continent:
             #print("total heur:", 0)
 
@@ -207,7 +207,11 @@ class AStar:
             #print(current_node)
             #print(end_node)
             # TODO this check is wrong 
-            if current_node == end_node:
+            #if current_node == end_node:
+
+            #print(self.env.remaining_countries)
+            visited = current_node.state.visited + (current_node.state.country, )
+            if all(item in visited for item in self.env.remaining_countries):
                 print("END")
                 path = []
                 current = current_node
@@ -217,18 +221,17 @@ class AStar:
                 return path[::-1] # Return reversed path
 
             print("CURRENT", current_node.state, "\n", "f:", current_node.g, "\n")
-            print("PATH SO FAR", current_node.path_so_far, "\n")
+            #print("PATH SO FAR", current_node.path_so_far, "\n")
 
-            print("VISITED COUNTRIES", current_node.visited_countries, "\n")
+            #print("VISITED COUNTRIES", current_node.visited_countries, "\n")
 
 
-            current_node.visited_countries.add(current_node.state.country)
 
             # TODO trying to get only relevant children
             #children = self.env.get_next_states(current_node)
             children = self.env.get_valid_locations(current_node)
 
-            print("valid locations", children, "\n")
+            #print("valid locations", children, "\n")
             for c in children:
                 #print("CHILD: ", c)
 
@@ -253,25 +256,19 @@ class AStar:
                 #child.h = self.heuristic(child.state, end_node.state)
                 child.h = self.heuristic(child, self.env)
                 child.g = current_node.g + current_node.get_cost(current_node, child, self.env)
-                print("child.g")
-                print(child.g)
+                #print("child.g")
+                #print(child.g)
                 child.f = child.g + child.h
 
                 if child.state in closed_map:
                     continue
-                #elif child.state in open_map and child.g >= open_map[child.state]:
-                #    continue
+                elif child.state in open_map and child.g >= open_map[child.state]:
+                    continue
                 else: 
                     open_map[child.state] = child.g
                     heapq.heappush(open_list, child)
 
-            #printself.env.remaining_locations)
-            #child.visited_countries.add(c.country)
-
-            #self.env.remaining_locations.pop(current_node.state.name)
             self.env.visited_countries.add(current_node.state.country)
-            #print(self.env.remaining_countries)
-            #self.env.remaining_countries.remove(current_node.state.country)
             closed_map[current_node.state] = current_node.g
         print(len(closed_map))
 

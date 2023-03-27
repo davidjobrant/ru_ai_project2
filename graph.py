@@ -7,9 +7,10 @@ from a_star_3 import AStar
 import matplotlib.pyplot as plt
 import pandas as pd
 import geopandas as gpd
+import time
 
 # to add: venue size, h
-State = collections.namedtuple('State',('name', 'location', 'country', 'hype', 'continent'))
+State = collections.namedtuple('State',('name', 'location', 'country', 'continent', 'hype', 'visited'))
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -76,12 +77,15 @@ def create_states(data):
     lat = []
     lon = []
     name = []
+    i = 0
     for l in data:
+        if i != 0:
         # name, location (lat, lon), country, hype 
-        name.append(l[0])
-        lat.append(float(l[1]))
-        lon.append(float(l[2]))
-        states.append(State(l[0], (float(l[1]), float(l[2])), l[3], l[4], l[5]))
+            name.append(l[0])
+            lat.append(float(l[1]))
+            lon.append(float(l[2]))
+            states.append(State(l[0], (float(l[1]), float(l[2])), l[3], l[4], l[5], tuple()))
+        i+=1
     return states, name, lat, lon
 
 def create_graph(states):
@@ -141,7 +145,7 @@ def create_plot(df, path):
     plt.show()
 
 def main():
-    coordinates = parse_coordinates('data/coordinates_2.txt')
+    coordinates = parse_coordinates('df.csv')
     states, name, lat, lon = create_states(coordinates)
     print(states)
     #graph = create_test_graph(states)
@@ -162,7 +166,12 @@ def main():
     search = AStar(env)
 
     print(states[0], states[1])
+    start = time.time()
     path = search.a_star(states[0], states[2])
+
+    end = time.time()
+    print(end - start)
+
     path_names = []
     print("VISTED AFTER SEARCH", env.visited_countries)
     print("PATH END")
@@ -177,7 +186,11 @@ def main():
     df['lon'] = lon
     df['data'] = 1
     df.loc[df["name"].isin(path_names), "data"] = 5
-    print(df)
+    #print(df)
+    print("Total locations:",len(states))
+    print("Locations in path:",len(path), ", expected:", len(remaining_countries))
+
+
     create_plot(df, path)
 
 
