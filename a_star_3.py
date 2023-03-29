@@ -4,9 +4,9 @@ from environment import Environment
 import collections
 import heapq
 import sys
-
+from queue import PriorityQueue
+import copy
 State = collections.namedtuple('State',('location'))
-
 class Node():
     """A node class for A* Pathfinding"""
 
@@ -18,6 +18,8 @@ class Node():
         self.visited_countries = visited_countries
 
         self.path_so_far = []
+        self.total_distance = 0
+        self.total_hype = 0
 
         # potential variables: 
 
@@ -43,7 +45,8 @@ class Node():
         #    prev = s
         #total = haversine(prev, end_state) 
         #print("total cost:", total)
-        return haversine(current.state, child.state) 
+        cost = haversine(current.state, child.state) 
+        return cost
     
     def get_cost_old(self, current, child, env):
         cost = 0
@@ -118,7 +121,7 @@ def haversine(coord1, coord2):
     #print(f"Distance: {meters} m")
     #print(f"Distance: {km} km")
 
-    return meters
+    return km
 
 
 
@@ -126,7 +129,10 @@ class AStar:
     def __init__(self, env):
         self.g_score = {}
         self.env = env
-
+        self.nb_node_expansions = 0
+        self.max_frontier_size = 0
+        self.goal_node = None
+        self.cached_visited = {}
 
     """
     TODO: Issue now is that we don't create the children nodes while looping, we already have a provided list. Therefore the parent
@@ -186,89 +192,87 @@ class AStar:
         end_node = Node(end, set(), None)
         end_node.g = end_node.h = end_node.f = 0
         # Initialize both open and closed list
-        open_list = []
+        #open_list = []
+        open_list = PriorityQueue()
+        
         open_map = { start_node.state: start_node.g } 
         closed_map = dict()
-        closed_list = []
 
         print("START", start_node)
 
         # Add the start node
-        heapq.heappush(open_list, start_node)
+        #heapq.heappush(open_list, start_node)
+        open_list.put(start_node)
 
         # Loop until you find the end
-        while len(open_list) > 0:
-
+        while not open_list.empty():
             # Get the current node
-            current_node = heapq.heappop(open_list)
-            
-            # Found the goal
-            #print("LEN", len(closed_map))
-            #print(current_node)
-            #print(end_node)
-            # TODO this check is wrong 
-            #if current_node == end_node:
+            current_node = open_list.get()
 
             #print(self.env.remaining_countries)
             visited = current_node.state.visited + (current_node.state.country, )
-            if all(item in visited for item in self.env.remaining_countries):
-                print("END")
+            if len(self.env.remaining_countries) == len(visited):
+            #TODO Is the above statement faster than below?
+            #if all(item in visited for item in self.env.remaining_countries):
+                print("END\n")
                 path = []
                 current = current_node
                 while current is not None:
+                    #print("DIST", current.g)
+                    #print("HYPE", current.total_hype)
+
                     path.append(current.state)
                     current = current.parent
-                return path[::-1] # Return reversed path
+                return path[::-1], current_node # Return reversed path
 
-            print("CURRENT", current_node.state, "\n", "f:", current_node.g, "\n")
-            #print("PATH SO FAR", current_node.path_so_far, "\n")
-
-            #print("VISITED COUNTRIES", current_node.visited_countries, "\n")
-
-
-
-            # TODO trying to get only relevant children
-            #children = self.env.get_next_states(current_node)
             children = self.env.get_valid_locations(current_node)
 
             #print("valid locations", children, "\n")
             for c in children:
                 #print("CHILD: ", c)
 
-                
                 child = Node(c, current_node.visited_countries, current_node)
-                #child.visited_countries.add(c.country)
+                child.total_hype = current_node.total_hype + int(c.hype)
 
-                path = []
-                current = child
-                visited_countries = set()
-                while current is not None:
-                    path.append(current.state)
-                    visited_countries.add(current.state.country)
-                    current = current.parent
-                child.path_so_far =  path[::-1] # Return reversed path
+
+                if c in self.cached_visited:
+                    visited_countries = self.cached_visited[c]
+                else:
+                    current = child
+                    visited_countries = set()
+                    while current is not None:
+                        visited_countries.add(current.state.country)
+                        current = current.parent
+                        
                 child.visited_countries = visited_countries
+                self.cached_visited[c] = visited_countries
                 
-                #child.g = child.get_cost()
-                #print(child.g)
-                # H is the heuristic — estimated distance from the current node to the end node.
-
-                #child.h = self.heuristic(child.state, end_node.state)
                 child.h = self.heuristic(child, self.env)
                 child.g = current_node.g + current_node.get_cost(current_node, child, self.env)
-                #print("child.g")
-                #print(child.g)
                 child.f = child.g + child.h
 
                 if child.state in closed_map:
                     continue
-                elif child.state in open_map and child.g >= open_map[child.state]:
-                    continue
-                else: 
-                    open_map[child.state] = child.g
-                    heapq.heappush(open_list, child)
+
+                if child.state in open_map:
+                    if child.g >= open_map[child.state]:
+                        continue
+                    else: 
+                        open_list.queue.remove(child)
+
+                open_map[child.state] = child.g
+                open_list.put(child)
 
             self.env.visited_countries.add(current_node.state.country)
+
+            # Mark current state as explored 
             closed_map[current_node.state] = current_node.g
+
+            self.nb_node_expansions += 1
+            if self.nb_node_expansions % 50000 == 0:
+                print(self.nb_node_expansions)
+            self.max_frontier_size = max(self.max_frontier_size, open_list.qsize())
+
+
         print(len(closed_map))
 

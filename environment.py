@@ -14,6 +14,7 @@ class Environment:
         self.remaining_countries = remaining_countries
         self.locations = locations
         self.remaining_continents = ['Africa', 'Antarctica', 'Asia', 'Europe', 'North America', 'Oceania', 'South America']
+        
         self.visited_countries = set()
         self.awoc = awoc.AWOC()
         self.continents_with_countries = {}
@@ -54,6 +55,37 @@ class Environment:
             if s.country in countries_in_continent and s.country not in node.visited_countries:
                 list.append(copy.deepcopy(s))
         return list, node.visited_countries
+
+    def get_locations_and_create_states(self, node, continent):
+        rem = copy.deepcopy(self.remaining_locations)
+        list = []
+        if continent not in self.continents_with_countries:
+            countries_in_continent = self.awoc.get_countries_list_of(continent)
+            self.continents_with_countries[continent] = countries_in_continent
+        else:
+            countries_in_continent = self.continents_with_countries[continent]
+        for name, s in rem.items(): 
+            if s.country in countries_in_continent and s.country not in node.visited_countries:
+                list.append(copy.deepcopy(s))
+        return list, node.visited_countries
+    
+    def get_next_continent(self, rem, continent):
+        remaining_continents = rem
+        neighbour = {
+            'North America': 'South America',
+            'South America': 'Africa',
+            'Africa': 'Europe',
+            'Europe': 'Asia',
+            'Asia': 'Oceania',
+            'Oceania': 'Antarctica',
+            'Antarctica': 'North America'
+        }
+        next_continent = neighbour[continent]
+        while next_continent not in remaining_continents:
+            next_continent = neighbour[next_continent]
+        #print("CONT", continent)
+        #print("NEXT", next_continent)
+        return next_continent
     
     def get_valid_locations(self, node):
         rem = copy.deepcopy(self.remaining_continents)
@@ -69,7 +101,9 @@ class Environment:
                 if all(item in node.visited_countries for item in locations):
                     rem.remove(continent)
                 if rem:
-                    continent = rem[0]
+                    # TODO do this smarter
+                    #continent = rem[0]
+                    continent = self.get_next_continent(rem, continent)
                     locations, node_visited_countries = self.get_locations(node, continent)
                 else:
                     break
