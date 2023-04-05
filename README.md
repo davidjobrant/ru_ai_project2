@@ -9,7 +9,7 @@
 
 4. Eventually, when the search finishes, it will open a browser tab and display the chosen route. The results of the experiments are saved to `results.txt`
 
-htmls contains a few route results which are interactive and can be opened, and plots contains the same thing but saved as images.
+htmls contains a few route results which are interactive and can be opened, plots contains the same thing but saved as images, and results contains the numbers of the experiments.
 
 ## Components
 
