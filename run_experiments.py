@@ -233,6 +233,7 @@ def main():
     coordinates = read_input_data('productive_data/100_25.csv')
     #coordinates = parse_coordinates('productive_data/50_30.csv')
 
+    # the number represents how many times the search should be run.
     run_experiments(coordinates, 1)
 
 if __name__=="__main__":
