@@ -1,7 +1,7 @@
 # Final Project in AI course at Reykjavik University
 
 ## How to run
-1. Create a .csv file using `create_example_data.py`, or use one of the available files in `productive_data`. 
+1. Create a .csv file using `create_example_data.py`, or use one of the available files in `productive_data`. The list `countries`specify in which countries the locations should be.
 
 2. Specify the .csv file in the main of `run_experiments.py`, as well as the int representing how many times you want to run the experiment. Then execute using `python3 run_experiments.py`.
 
