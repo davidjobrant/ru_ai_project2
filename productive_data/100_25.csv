@@ -1,0 +1,101 @@
+,lat,lon,country,continent,hype
+0,34.95303,-120.43572,United States,North America,1
+1,35.61452,-88.81395,United States,North America,7
+2,34.06635,-84.67837,United States,North America,6
+3,40.60538,-73.75513,United States,North America,6
+4,53.49389,-1.29243,United Kingdom,Europe,3
+5,52.68333,0.93333,United Kingdom,Europe,9
+6,53.49389,-1.29243,United Kingdom,Europe,6
+7,51.84819,1.26738,United Kingdom,Europe,8
+8,-25.54073,152.70493,Australia,Oceania,4
+9,-25.54073,152.70493,Australia,Oceania,6
+10,-31.95224,115.8614,Australia,Oceania,4
+11,-25.54073,152.70493,Australia,Oceania,8
+12,15.45144,78.14797,India,Asia,5
+13,28.71271,77.656,India,Asia,1
+14,26.11527,86.59509,India,Asia,5
+15,14.62072,74.83554,India,Asia,3
+16,61.72744,17.10558,Sweden,Europe,3
+17,59.33333,18.28333,Sweden,Europe,3
+18,61.72744,17.10558,Sweden,Europe,3
+19,61.72744,17.10558,Sweden,Europe,6
+20,-37.32167,-59.13316,Argentina,South America,9
+21,-31.4488,-60.93173,Argentina,South America,1
+22,-34.74785,-58.70072,Argentina,South America,1
+23,-54.8,-68.3,Argentina,South America,9
+24,-38.16604,145.13643,Australia,Oceania,9
+25,-37.88333,145.06667,Australia,Oceania,7
+26,-33.88096,151.07986,Australia,Oceania,5
+27,-27.50578,153.10236,Australia,Oceania,7
+28,45.40008,-73.58248,Canada,North America,2
+29,46.1351,-60.1831,Canada,North America,9
+30,49.88307,-119.48568,Canada,North America,9
+31,46.23899,-63.13414,Canada,North America,5
+32,-32.45242,-71.23106,Chile,South America,9
+33,-30.60106,-71.19901,Chile,South America,6
+34,-36.9256,-73.02841,Chile,South America,4
+35,-36.9256,-73.02841,Chile,South America,8
+36,55.67938,12.53463,Denmark,Europe,1
+37,55.67938,12.53463,Denmark,Europe,3
+38,55.67938,12.53463,Denmark,Europe,5
+39,55.67938,12.53463,Denmark,Europe,4
+40,49.5099,6.74549,Germany,Europe,1
+41,51.19139,6.51352,Germany,Europe,1
+42,53.59337,9.47629,Germany,Europe,9
+43,52.59319,13.32127,Germany,Europe,9
+44,43.67681,4.63031,France,Europe,5
+45,50.75,2.25,France,Europe,5
+46,43.61092,3.87723,France,Europe,5
+47,48.90472,2.2469,France,Europe,5
+48,34.8825,128.62667,South Korea,Asia,5
+49,36.20389,127.08472,South Korea,Asia,9
+50,36.20389,127.08472,South Korea,Asia,4
+51,37.65639,126.835,South Korea,Asia,6
+52,34.65918,109.22921,China,Asia,8
+53,36.19278,117.65694,China,Asia,9
+54,23.73333,114.68333,China,Asia,6
+55,27.92333,118.53333,China,Asia,8
+56,51.12794,4.21372,Belgium,Europe,1
+57,50.71229,4.52529,Belgium,Europe,7
+58,51.12794,4.21372,Belgium,Europe,1
+59,50.71229,4.52529,Belgium,Europe,4
+60,16.75973,-93.11308,Mexico,North America,9
+61,20.28527,-103.42897,Mexico,North America,4
+62,20.74122,-100.44843,Mexico,North America,4
+63,20.21322,-100.88023,Mexico,North America,4
+64,-28.24,-48.67028,Brazil,South America,8
+65,-26.22861,-52.67056,Brazil,South America,5
+66,-14.66463,-52.35558,Brazil,South America,5
+67,-4.24444,-42.29444,Brazil,South America,4
+68,-38.65333,178.00417,New Zealand,Oceania,7
+69,-38.65333,178.00417,New Zealand,Oceania,4
+70,-44.39672,171.25364,New Zealand,Oceania,5
+71,-44.39672,171.25364,New Zealand,Oceania,2
+72,65.93381,111.4834,Russia,Europe,6
+73,44.98901,38.94324,Russia,Europe,4
+74,55.75556,60.70278,Russia,Europe,2
+75,55.8736,85.4265,Russia,Europe,6
+76,41.41204,2.18247,Spain,Europe,4
+77,41.41204,2.18247,Spain,Europe,9
+78,38.47917,-1.325,Spain,Europe,4
+79,38.96667,-0.18333,Spain,Europe,9
+80,37.08819,-8.2503,Portugal,Europe,5
+81,41.1053,-7.32097,Portugal,Europe,5
+82,37.08819,-8.2503,Portugal,Europe,1
+83,38.72706,-9.24671,Portugal,Europe,4
+84,34.31,-2.16,Morocco,Africa,8
+85,33.43443,-5.22126,Morocco,Africa,2
+86,33.43443,-5.22126,Morocco,Africa,1
+87,34.31,-2.16,Morocco,Africa,8
+88,31.39547,34.75699,Israel,Asia,4
+89,31.92923,34.86563,Israel,Asia,6
+90,32.05971,34.8732,Israel,Asia,9
+91,31.92923,34.86563,Israel,Asia,7
+92,9.91861,-68.30472,Venezuela,South America,5
+93,9.91861,-68.30472,Venezuela,South America,8
+94,9.91861,-68.30472,Venezuela,South America,8
+95,10.22677,-67.33122,Venezuela,South America,1
+96,34.75856,136.13108,Japan,Asia,2
+97,33.4425,129.96972,Japan,Asia,3
+98,39.46667,141.95,Japan,Asia,5
+99,36.24624,139.07204,Japan,Asia,8

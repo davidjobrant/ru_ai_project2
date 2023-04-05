@@ -12,6 +12,8 @@ import plotly.graph_objects as go
 import numpy as np
 from numpy import pi, sin, cos
 import os
+import random
+from heuristics import DistanceHeuristic, HypeHeuristic, DistanceAndCountriesHeuristic, DjikstraHeuristic
 # to add: venue size, h
 State = collections.namedtuple('State',('name', 'location', 'country', 'continent', 'hype', 'visited'))
 
@@ -75,23 +77,53 @@ def parse_coordinates(filename):
     print(coordinates)
     return coordinates
 
+
+# def create_states(data):
+#     states = []
+#     lat = []
+#     lon = []
+#     name = []
+#     countries = []
+#     hype = []
+#     continents = []
+#     i = 0
+#     for l in data:
+#         if i != 0:
+#         # name, location (lat, lon), country, hype 
+#             name.append(l[0])
+#             lat.append(float(l[1]))
+#             lon.append(float(l[2]))
+#             countries.append(l[3])
+#             continents.append(l[4])
+#             hype.append(l[5])
+#             #states.append(State(l[0], (float(l[1]), float(l[2])), l[3], l[4], l[5], tuple()))
+#         i+=1
+    
+#     a = 0
+#     for n in name:
+#         states.append(State(n, (lat[a], lon[a]), countries[a], continents[a], hype[a], tuple(countries)))
+#         a+=1
+#     return states, name, lat, lon, countries
+
 def create_states(data):
     states = []
     lat = []
     lon = []
     name = []
     countries = []
+    hype = []
     i = 0
     for l in data:
         if i != 0:
         # name, location (lat, lon), country, hype 
-            name.append(l[0])
+            name.append(i)
             lat.append(float(l[1]))
             lon.append(float(l[2]))
             countries.append(l[3])
+            hype.append(l[5])
             states.append(State(l[0], (float(l[1]), float(l[2])), l[3], l[4], l[5], tuple()))
         i+=1
-    return states, name, lat, lon, countries
+    return states, name, lat, lon, countries, hype
 
 def create_graph(states):
     graph = {}
@@ -202,7 +234,7 @@ def new_plot_try(df, path, user_in):
         lon =df['lon'], #New York
         lat = df['lat'],#Sydney
         #hoverinfo = 'text',
-        text = df['country'],
+        text = df['country'] + "<br>" + "Hype: " + df['hype'],
         mode = 'markers',
         showlegend = False,
         marker_size=5,
@@ -229,6 +261,7 @@ def new_plot_try(df, path, user_in):
         lat, lon = point.location
         print(lat, lon)
         print(prev)
+        print(i)
         if remaining == 1:
             last = point
         if prev:
@@ -243,7 +276,7 @@ def new_plot_try(df, path, user_in):
                 mode = 'markers+lines',
                 line = dict(width = 3,color = 'red'),
                 name = prev_point.country,
-                text = "Stop nbr: " + str(i))
+                text = "Stop nbr: " + str(i) + "<br>" + "Hype: " + str(point.hype))
                 )
         prev = (lat, lon)
         prev_point = point
@@ -283,29 +316,40 @@ def new_plot_try(df, path, user_in):
     #fig.write_image(f"images/{user_in}.png")
 
 
-def main():
-    coordinates = parse_coordinates('productive_data/base_case.csv')
-    states, name, lat, lon, countries = create_states(coordinates)
+
+def run_experiments(coordinates):
+    for i in range(5):    
+        results = one_iteration(coordinates)
+
+def one_iteration(coordinates):
+    states, name, lat, lon, countries, hype = create_states(coordinates)
     print(states)
 
     remaining_locations = {}
     remaining_countries = set()
     i = 0
     for s in states: 
-
         remaining_countries.add(s.country)
         remaining_locations[s.name] = s
         i+=1
     
     env = Environment(states[0], states, remaining_locations, remaining_countries)
-    search = AStar(env)
+    heuristic = DistanceHeuristic(env)
+    #heuristic = HypeHeuristic(env)
+    search = AStar(env, heuristic)
 
-    #print(states[0], states[1])
-    #print("Enter name of test:\n")
-    #user_in = input("Enter name of test:\n")
-    user_in = "template"
+    user_in ="no" #input("Random start and end?\n")
+    print(user_in)
+    if user_in == "y":
+        print("YES")
+        random_start = random.randint(0,len(states))
+        random_end = random.randint(0,len(states))
+    else: 
+        random_start = 0
+        random_end = 1
     start = time.time()
-    path, last_node = search.a_star(states[0], states[0])
+
+    path, last_node = search.a_star(states[random_start], states[random_end])
 
     end = time.time()
 
@@ -313,7 +357,7 @@ def main():
     print("-----------------------------------------------")
     print("PATH\n")
     for s in path: 
-        print(s.country)
+        print(s)
         path_names.append(s.name)
     print("-----------------------------------------------")
 
@@ -323,6 +367,7 @@ def main():
     df['lat'] = lat
     df['lon'] = lon
     df['data'] = 1
+    df['hype'] = hype
     df.loc[df["name"].isin(path_names), "data"] = 5
     #print(df)
 
@@ -339,17 +384,52 @@ def main():
 
     print(len(states))
     print(len(path), f"({len(remaining_countries)})")
-    print(round(last_node.g), "km")
+    print(round(last_node.g))
     print(last_node.total_hype)
     # TODO calculate env scor ebased on total distance, and how many flights are domestic or not  
-    print(round(last_node.g * 156), "g")
-    print(end - start, "s")
+    print(round(last_node.g * 156))
+    print(end - start)
     print(search.nb_node_expansions)
     print( search.max_frontier_size)
     print("-----------------------------------------------")
+    print("Worse g-values", search.worse_g_value)
+    print("Already closed:", search.already_closed)
 
+    results = f"Experiment Results \n \
+        {len(states)} \n \
+        {len(path)} {len(remaining_countries)} \n \
+        {round(last_node.g)}\n \
+        {last_node.total_hype} \n \
+        {round(last_node.g * 156)} \n \
+        {end - start} \n \
+        {search.nb_node_expansions} \n \
+        {search.max_frontier_size} \n \
+        {search.worse_g_value} \n \
+        {search.already_closed} \n"
+    
+    with open('results.txt', 'a') as f:
+        f.write(results)
+    
+    # TODO calculate env scor ebased on total distance, and how many flights are domestic or not  
+
+    print("-----------------------------------------------")
+    print("Worse g-values", search.worse_g_value)
+    print("Already closed:", search.already_closed)
+    
     new_plot_try(df, path, user_in)
 
+def main():
+    # choose file to run
+    coordinates = parse_coordinates('productive_data/100_25.csv')
+    #coordinates = parse_coordinates('productive_data/50_30.csv')
+
+    #coordinates = parse_coordinates('FINAL BASE CASE.csv')
+
+    #one_iteration(coordinates)
+    run_experiments(coordinates)
 
 if __name__=="__main__":
     main()
+
+
+
