@@ -1,8 +1,7 @@
-import copy
-import pandas as pd
 import awoc 
 import collections
 import math 
+
 State = collections.namedtuple('State',('name', 'location', 'country', 'hype', 'continent', 'visited'))
 
 class Environment:
@@ -20,20 +19,6 @@ class Environment:
         self.awoc = awoc.AWOC()
         self.continents_with_countries = {}
         self.created_states = {}
-
-    def missing_country(self, node):
-        list = []
-        state = node.state
-        countries_in_continent = self.awoc.get_countries_list_of(state.continent)
-        for name, s in self.remaining_locations.items(): 
-            if s.country in countries_in_continent and s.country not in node.visited_countries:
-                list.append(s)
-        '''
-        TODO 
-        what do we want to do if list is empty
-        because that means that the other countries aren't in this continent
-        '''
-        return list
     
     def haversine(self, coord1, coord2):
         '''
@@ -62,10 +47,10 @@ class Environment:
 
         return km
 
-    # maybe cache remaining countries
-    # cached_remaining_countries[state] = state.visited
-
     def get_locations_and_create_states(self, node, continent):
+        '''
+            Retrieves legal successor locations and create states for them.
+        '''
         self.remaining_locations
         list = []
         if continent not in self.continents_with_countries:
@@ -74,22 +59,17 @@ class Environment:
         else:
             countries_in_continent = self.continents_with_countries[continent]
 
-        '''
-            TODO
-            We don't want to loop through all of these elements every time.
-            Would be nice to only loop through the ones that are actually legal
-            And the ones that have not been visited yet
-            Idea is to use a cache somehow
-        '''
         for name, s in self.remaining_locations.items(): 
             if s.country in countries_in_continent and s.country not in node.visited_countries:
                 new_state = State(s.name, s.location, s.country, s.hype, s.continent, tuple(node.visited_countries))
                 self.created_states[new_state] = new_state
                 list.append(new_state)
-        #print("LIST:", list)
         return list
     
     def get_next_continent(self, rem, continent):
+        '''
+            Retrieves the next continent to visit. 
+        '''
         remaining_continents = rem
         neighbour = {
             'North America': 'South America',
@@ -106,6 +86,9 @@ class Environment:
         return next_continent
     
     def get_valid_locations(self, node):
+        '''
+            Returns the valid successor states.
+        '''
         self.listf_of_continents = ['Africa', 'Antarctica', 'Asia', 'Europe', 'North America', 'Oceania', 'South America']      
         rem = self.listf_of_continents
         continent = node.state.continent

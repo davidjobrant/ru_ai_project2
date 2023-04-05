@@ -1,9 +1,7 @@
-import math
 from environment import Environment
-#from state import State
 import collections
 import copy
-from a_star_3 import AStar
+from search import AStar
 import matplotlib.pyplot as plt
 import pandas as pd
 import geopandas as gpd
@@ -11,65 +9,14 @@ import time
 import plotly.graph_objects as go
 import numpy as np
 from numpy import pi, sin, cos
-import os
-import random
 from heuristics import DistanceHeuristic, HypeHeuristic, DistanceAndCountriesHeuristic, DjikstraHeuristic
-# to add: venue size, h
+
 State = collections.namedtuple('State',('name', 'location', 'country', 'continent', 'hype', 'visited'))
 
-class Node():
-    """A node class for A* Pathfinding"""
-
-    def __init__(self, state: State, parent= None, remaining_locations=[]):
-        self.parent = parent
-        self.state = state
-        self.remaining_locations = []
-
-        # potential variables: 
-
-        # locations of the remaining concert venues 
-
-        # maybe not relevant in the state because these values are not changing 
-        # but probably relevent in the heuristics
-        # -> so then do we need them in the state for that reason? 
-        # venue size 
-        # artist buzz
-        # environmental footprint 
-
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __str__(self):
-        return f"location: {self.state.location}"
-
-    def __eq__(self, other):
-        return self.state == other.state
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __lt__(self, other):
-        return (self.f < other.f)
-
-    def __gt__(self, other):
-        return (self.f > other.f)
-
-    def __le__(self, other):
-        return (self.f < other.f) or (self == other)
-
-    def __ge__(self, other):
-        return (self.f > other.f) or (self == other)
-
-def heuristic():
-    pass
-    # this heuristic should be give a shorter distance than the actual one 
-
-'''
-    Calculate distance using the Haversine Formula
-'''
-
-def parse_coordinates(filename):
+def read_input_data(filename):
+    '''
+        Reads input data from a specified file
+    '''
     coordinates = []
     with open(filename) as file:
         for line in file:
@@ -77,45 +24,15 @@ def parse_coordinates(filename):
     print(coordinates)
     return coordinates
 
-
-# def create_states(data):
-#     states = []
-#     lat = []
-#     lon = []
-#     name = []
-#     countries = []
-#     hype = []
-#     continents = []
-#     i = 0
-#     for l in data:
-#         if i != 0:
-#         # name, location (lat, lon), country, hype 
-#             name.append(l[0])
-#             lat.append(float(l[1]))
-#             lon.append(float(l[2]))
-#             countries.append(l[3])
-#             continents.append(l[4])
-#             hype.append(l[5])
-#             #states.append(State(l[0], (float(l[1]), float(l[2])), l[3], l[4], l[5], tuple()))
-#         i+=1
-    
-#     a = 0
-#     for n in name:
-#         states.append(State(n, (lat[a], lon[a]), countries[a], continents[a], hype[a], tuple(countries)))
-#         a+=1
-#     return states, name, lat, lon, countries
-
 def create_states(data):
-    states = []
-    lat = []
-    lon = []
-    name = []
-    countries = []
-    hype = []
+    '''
+        Creates states based on a data list. 
+    '''
+    states, lat, lon, name, countries, hype = [], [], [], [], [], []
+
     i = 0
     for l in data:
         if i != 0:
-        # name, location (lat, lon), country, hype 
             name.append(i)
             lat.append(float(l[1]))
             lon.append(float(l[2]))
@@ -125,72 +42,11 @@ def create_states(data):
         i+=1
     return states, name, lat, lon, countries, hype
 
-def create_graph(states):
-    graph = {}
-    i = 0
-    for s in states: 
-        states_2 = copy.deepcopy(states)
-        states_2.remove(s)
-        graph[s] = states_2
-
-    return graph
-
-def create_test_graph(states):
-    graph = {}
-    i = 0
-    for s in states: 
-        if i == 7:
-            i = 0
-        graph[s] = [states[i+1], states[i+2]]
-        i+=1
-    return graph
-
-def create_plot(df, path):
-    # From GeoPandas, our world map data
-    worldmap = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
-
-    # Creating axes and plotting world map
-    fig, ax = plt.subplots(figsize=(12, 6))
-    worldmap.plot(color="lightgrey", ax=ax)
-
-    # Plotting our Impact Energy data with a color map
-    x = df['lon']
-    y = df['lat']
-    z = df['data']
-    plt.scatter(x, y, s=20*z, c=z, alpha=1, vmin=0, vmax=5)
-                #cmap='autumn')
-    plt.colorbar(label='In Tour ')
-    prev = None
-    remaining = len(path)
-    first = None
-    for point in path: 
-        if remaining == len(path):
-            first = point.location
-        lat, lon = point.location
-        print(lat, lon)
-        print(prev)
-        if remaining == 1:
-            last = point
-        if prev:
-            plt.plot([prev[1], lon],[prev[0], lat])
-        prev = (lat, lon)
-        remaining -= 1
-    plt.plot([prev[1], first[1]],[prev[0], first[0]])
-
-    # Creating axis limits and title
-    plt.xlim([-180, 180])
-    plt.ylim([-90, 90])
-
-    #first_year = df["Datetime"].min().strftime("%Y")
-    #last_year = df["Datetime"].max().strftime("%Y")
-    #p#lt.title("NASA: Fireballs Reported by Government Sensors\n" +     
-    #        str(first_year) + " - " + str(last_year))
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-    plt.show()
 
 def point_sphere(lon, lat):
-    #associate the cartesian coords (x, y, z) to a point on the  globe of given lon and lat
+    '''
+        Associate the cartesian coords (x, y, z) to a point on the  globe of given lon and lat
+    '''
     #lon longitude
     #lat latitude
     lon = lon*pi/180
@@ -225,8 +81,10 @@ def slerp(A=[100, 45], B=[-50, -25], dir=-1, n=100):
         lats = 180*np.arctan(pts[:, 2]/np.sqrt(pts[:, 0]**2+pts[:,1]**2))/pi
         return lons, lats
 
-def new_plot_try(df, path, user_in):
-    #############################
+def scatter_plot(df, path):
+    '''
+        Visualises the path on a worldmap using plotly. 
+    '''
     fig = go.Figure()
     #Define the map:
     fig.add_trace(go.Scattergeo(
@@ -242,7 +100,6 @@ def new_plot_try(df, path, user_in):
             "%{text}<br>" +
             "longitude: %{lon}<br>" +
             "latitude: %{lat}<br>" + "<extra></extra>",
-        
         line = dict(
                     width = 3,
                     color = 'rgb(68, 68, 68)'
@@ -253,17 +110,12 @@ def new_plot_try(df, path, user_in):
     prev_point = None
     remaining = len(path)
     path.append(copy.deepcopy(path[len(path)-1]))
-    first = None
     i = 0
     for point in path: 
-        if remaining == len(path):
-            first = point
         lat, lon = point.location
         print(lat, lon)
         print(prev)
         print(i)
-        if remaining == 1:
-            last = point
         if prev:
             #plt.plot([prev[1], lon],[prev[0], lat])
             lons = [prev[1], lon]
@@ -282,33 +134,13 @@ def new_plot_try(df, path, user_in):
         prev_point = point
         remaining -= 1
         i+=1
-    #lons = [first.location[1], last.location[1] ]
-    #lats = [first.location[0], last.location[0] ]
-    #print("lon lats", lons, lats)
-    i+=1
 
-    
+    # Remove comment for circular projection instead of a flat worldmap
     fig.update_geos(
-    #visible=False, resolution=50,
-    showcountries=True, #, countrycolor="RebeccaPurple"
-    #projection_type="orthographic"
+        showcountries=True, 
+        #projection_type="orthographic"
     )
-    #fig.add_trace(
-    #        go.Scattergeo(
-    #            locationmode = 'USA-states',
-    #            lon = lons,
-    #            lat = lats,
-    #            mode = 'lines',
-    #            line = dict(width = 1,color = 'red')))
-    #Draw the complement of the shortest path 
-    #lons, lats = slerp(A= [151.2093, -33.8688], B = [-74, 40.7128], dir=-1)
-    #fig.add_trace(
-    #        go.Scattergeo(
-    #            locationmode = 'USA-states',
-    #            lon = lons,
-    #            lat = lats,
-    #            mode = 'lines',
-    #           line = dict(width = 2,color = 'green')))
+    
     fig.show()
     #if not os.path.exists("plots"):
     #    os.mkdir("plots")
@@ -317,9 +149,9 @@ def new_plot_try(df, path, user_in):
 
 
 
-def run_experiments(coordinates):
-    for i in range(5):    
-        results = one_iteration(coordinates)
+def run_experiments(coordinates, nbr_of_times):
+    for i in range(nbr_of_times):    
+        one_iteration(coordinates)
 
 def one_iteration(coordinates):
     states, name, lat, lon, countries, hype = create_states(coordinates)
@@ -333,24 +165,13 @@ def one_iteration(coordinates):
         remaining_locations[s.name] = s
         i+=1
     
+    # Creates env, heuristic, search
     env = Environment(states[0], states, remaining_locations, remaining_countries)
     heuristic = DistanceHeuristic(env)
-    #heuristic = HypeHeuristic(env)
     search = AStar(env, heuristic)
 
-    user_in ="no" #input("Random start and end?\n")
-    print(user_in)
-    if user_in == "y":
-        print("YES")
-        random_start = random.randint(0,len(states))
-        random_end = random.randint(0,len(states))
-    else: 
-        random_start = 0
-        random_end = 1
     start = time.time()
-
-    path, last_node = search.a_star(states[random_start], states[random_end])
-
+    path, last_node = search.a_star(states[0], states[1])
     end = time.time()
 
     path_names = []
@@ -380,20 +201,9 @@ def one_iteration(coordinates):
     print("Time elapsed", end - start)
     print("Node expansions:", search.nb_node_expansions)
     print("Frontier size:", search.max_frontier_size)
-    print("-----------------------------------------------")
-
-    print(len(states))
-    print(len(path), f"({len(remaining_countries)})")
-    print(round(last_node.g))
-    print(last_node.total_hype)
-    # TODO calculate env scor ebased on total distance, and how many flights are domestic or not  
-    print(round(last_node.g * 156))
-    print(end - start)
-    print(search.nb_node_expansions)
-    print( search.max_frontier_size)
-    print("-----------------------------------------------")
     print("Worse g-values", search.worse_g_value)
     print("Already closed:", search.already_closed)
+    print("-----------------------------------------------")
 
     results = f"Experiment Results \n \
         {len(states)} \n \
@@ -416,17 +226,14 @@ def one_iteration(coordinates):
     print("Worse g-values", search.worse_g_value)
     print("Already closed:", search.already_closed)
     
-    new_plot_try(df, path, user_in)
+    scatter_plot(df, path)
 
 def main():
     # choose file to run
-    coordinates = parse_coordinates('productive_data/100_25.csv')
+    coordinates = read_input_data('productive_data/100_25.csv')
     #coordinates = parse_coordinates('productive_data/50_30.csv')
 
-    #coordinates = parse_coordinates('FINAL BASE CASE.csv')
-
-    #one_iteration(coordinates)
-    run_experiments(coordinates)
+    run_experiments(coordinates, 1)
 
 if __name__=="__main__":
     main()

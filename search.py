@@ -1,12 +1,8 @@
-import math
 from environment import Environment
-#from state import State
-import collections
-import heapq
-import sys
 from queue import PriorityQueue
-import copy
-State = collections.namedtuple('State',('location'))
+import collections
+State = collections.namedtuple('State',('name', 'location', 'country', 'hype', 'continent', 'visited'))
+
 class Node():
     """A node class for A* Pathfinding"""
 
@@ -54,12 +50,8 @@ class Node():
     def __ge__(self, other):
         return (self.f > other.f) or (self == other)
 
-
-
-
 class AStar:
     def __init__(self, env, heuristics):
-        # TODO check if all params are used
         self.env = env
         self.heuristics = heuristics
 
@@ -70,67 +62,6 @@ class AStar:
         self.cached_visited = {}
         self.worse_g_value = 0
         self.already_closed = 0
-
-    """
-    TODO: Issue now is that we don't create the children nodes while looping, we already have a provided list. Therefore the parent
-    nodes aren't assigned. 
-    So somehow, we need to create the states as we loop through them to be able to retrieve the path in the end. 
-    Might not work to have them seperated in a list in the Environment env.
-    - Maybe we still could, just have a different typ of object "state" which is stored there
-    - When looping, we create nodes based on those remaining states. 
-    - Potentially? 
-    """
-
-
-    def heuristic(self, node, end_node, env):
-        '''
-            Heuristic to estimate the distance to the end node.
-        '''
-       # total = 0   
-       # prev = node.state
-        #for name, s in self.env.remaining_locations.items():
-         #   total += haversine(prev, s) 
-          #  prev = s
-        #return total
-        total = 0
-        # prioritisting finishing a continent
-        #if node.state.continent != end_node.state.continent:
-        #    total = 200
-
-        #total = 10 - len(node.visited_continents) + 10 - len(node.state.visited) 
-
-        # prioritising visiting countries faster? 
-        # TODO not sure if it actually does though
-        #total = 1000 - len(node.state.visited) * 100
-        #total = len(node.state.visited) * 100
-        #if total <= 0:
-        #    total = 0
-        #return total
-
-        # really fast: 
-        #total = 100 - len(node.state.visited)
-        
-        '''
-            TODO: Different heuristics for distance, hype, etc
-        '''
-        # Below is for hype 
-        #total = 1000
-        #if int(node.state.hype) >=8: 
-        #total = 0
-
-        # below is for closest distance to end_node
-        distance_to_end = haversine(node.state, end_node.state)
-        total = distance_to_end
-        #print("dist:", distance_to_end)
-        
-        #remaining_locations = 10 * (len(env.countries) - len(node.state.visited))
-        #sprint("remaining:", remaining_locations)
-        #total = distance_to_end + remaining_locations
-
-        # below is for closest distance to next nodes? 
-
-
-        return total
 
     def is_goal_state(self, visited):
         '''

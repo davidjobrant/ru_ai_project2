@@ -1,4 +1,3 @@
-
 class Heuristic():
     	# return an estimate of the remaining cost of reaching a goal state from state s
 
@@ -9,12 +8,19 @@ class Heuristic():
         raise NotImplementedError()
 	
 class DistanceHeuristic(Heuristic):
-	
+
     def eval(self, node, end_node):
-	    return self.env.haversine(node.state, end_node.state)
+        '''
+            Calculates distance from start to end node. 
+         '''
+        return self.env.haversine(node.state, end_node.state)
 
 class HypeHeuristic(Heuristic):
+
     def eval(self, node, end_node):
+        '''
+            Heuristic guidance by hype levels. 
+        '''
         # hype is a value between 1-10
         hype = int(node.state.hype)
         if hype >= 9:
@@ -27,11 +33,17 @@ class HypeHeuristic(Heuristic):
 
 class DjikstraHeuristic(Heuristic):
     def eval(self, node, end_node):
+        '''
+            Djikstra, i.e. no heuristic. 
+        '''
         return 0
     
 
 class DistanceAndCountriesHeuristic(Heuristic):
     def eval(self, node, end_node):
+        '''
+            Distance and remaining countries combined. 
+        '''
         estimated_distance = self.env.haversine(node.state, end_node.state)
         #print("dist", estimated_distance)
         env_countries = 100 * (len(self.env.countries) - len(node.state.visited))
@@ -41,6 +53,9 @@ class DistanceAndCountriesHeuristic(Heuristic):
 
 class CountriesHeuristic(Heuristic):
     def eval(self, node, end_node):
+        '''
+            Returns a value base on how many remaining countries there are left to visit.
+        '''
         #estimated_distance = self.env.haversine(node.state, end_node.state)
         #print("dist", estimated_distance)
         env_countries = 100 * (len(self.env.countries) - len(node.state.visited))
